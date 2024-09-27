@@ -6,5 +6,5 @@ Esse projeto, feito em **Kotlin**, calcula, entre um intervalo de 2 datas, a qua
 - Guilherme Gomes Andrade
 - Guilherme Holanda
 - João Victor Neves
-- Luca Barros
+- Lucca Barros
 
