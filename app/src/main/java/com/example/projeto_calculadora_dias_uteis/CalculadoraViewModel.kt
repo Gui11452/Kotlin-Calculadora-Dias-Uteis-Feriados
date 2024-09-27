@@ -7,7 +7,72 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 class CalculadoraViewModel : ViewModel() {
-
+    private val _diasUteis = MutableLiveData<Int>()
+    val diasUteis: LiveData<Int> = _diasUteis
+    private val _diasCorridos = MutableLiveData<Int>()
+    val diasCorridos: LiveData<Int> = _diasCorridos
+    private val _sabados = MutableLiveData<Int>()
+    val sabados: LiveData<Int> = _sabados
+    private val _domingos = MutableLiveData<Int>()
+    val domingos: LiveData<Int> = _domingos
+    private val _feriadosNacionais = MutableLiveData<Int>()
+    val feriadosNacionais: LiveData<Int> = _feriadosNacionais
+    private val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+    
+    fun calcularResultados(dataInicioStr: String, dataFimStr: String) {
+       val dataInicio = dateFormat.parse(dataInicioStr)
+       val dataFim = dateFormat.parse(dataFimStr)
+       if (dataInicio == null || dataFim == null || dataInicio.after(dataFim)) {
+           return
+       }
+       val diferencaDias = ((dataFim.time - dataInicio.time) / (1000 * 60 * 60 * 24)).toInt() + 1
+       var domingosQTD = 0
+       var sabadosQTD = 0
+       var diasUteisQTD = 0
+       var feriadosQTD = 0
+       val calendar = Calendar.getInstance()
+       calendar.time = dataInicio
+       while (!calendar.time.after(dataFim)) {
+           val anoAtual = calendar.get(Calendar.YEAR)
+           val pascoa = calcularPascoa(anoAtual)
+           val carnaval = calcularCarnaval(pascoa)
+           val corpusChristi = calcularCorpusChristi(pascoa)
+           val feriadosMoveis = setOf(
+               Pair(carnaval.get(Calendar.MONTH) + 1, carnaval.get(Calendar.DAY_OF_MONTH)),
+               Pair(pascoa.get(Calendar.MONTH) + 1, pascoa.get(Calendar.DAY_OF_MONTH)),
+               Pair(corpusChristi.get(Calendar.MONTH) + 1, corpusChristi.get(Calendar.DAY_OF_MONTH))
+           )
+           val feriadosFixos = setOf(
+               Pair(1, 1),
+               Pair(4, 21),
+               Pair(5, 1),
+               Pair(9, 7),
+               Pair(10, 12),
+               Pair(11, 2),
+               Pair(11, 15),
+               Pair(12, 25)
+           )
+           val diaSemana = calendar.get(Calendar.DAY_OF_WEEK)
+           val diaTemporario = calendar.get(Calendar.DAY_OF_MONTH)
+           val mesTemporario = calendar.get(Calendar.MONTH) + 1
+           val dataAtual = Pair(mesTemporario, diaTemporario)
+           if (feriadosFixos.contains(dataAtual) || feriadosMoveis.contains(dataAtual)) {
+               feriadosQTD++
+           } else if (diaSemana == Calendar.SATURDAY) {
+               sabadosQTD++
+           } else if (diaSemana == Calendar.SUNDAY) {
+               domingosQTD++
+           } else {
+               diasUteisQTD++
+           }
+           calendar.add(Calendar.DAY_OF_MONTH, 1)
+       }
+       _diasUteis.value = diasUteisQTD
+       _diasCorridos.value = diferencaDias
+       _sabados.value = sabadosQTD
+       _domingos.value = domingosQTD
+       _feriadosNacionais.value = feriadosQTD
+   }
     
     private fun calcularPascoa(ano: Int): Calendar {
         val a = ano % 19
