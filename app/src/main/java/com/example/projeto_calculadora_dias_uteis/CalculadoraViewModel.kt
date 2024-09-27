@@ -22,9 +22,11 @@ class CalculadoraViewModel : ViewModel() {
     fun calcularResultados(dataInicioStr: String, dataFimStr: String) {
        val dataInicio = dateFormat.parse(dataInicioStr)
        val dataFim = dateFormat.parse(dataFimStr)
+       
        if (dataInicio == null || dataFim == null || dataInicio.after(dataFim)) {
            return
        }
+
        val diferencaDias = ((dataFim.time - dataInicio.time) / (1000 * 60 * 60 * 24)).toInt() + 1
        var domingosQTD = 0
        var sabadosQTD = 0
@@ -32,6 +34,7 @@ class CalculadoraViewModel : ViewModel() {
        var feriadosQTD = 0
        val calendar = Calendar.getInstance()
        calendar.time = dataInicio
+
        while (!calendar.time.after(dataFim)) {
            val anoAtual = calendar.get(Calendar.YEAR)
            val pascoa = calcularPascoa(anoAtual)
@@ -56,6 +59,7 @@ class CalculadoraViewModel : ViewModel() {
            val diaTemporario = calendar.get(Calendar.DAY_OF_MONTH)
            val mesTemporario = calendar.get(Calendar.MONTH) + 1
            val dataAtual = Pair(mesTemporario, diaTemporario)
+
            if (feriadosFixos.contains(dataAtual) || feriadosMoveis.contains(dataAtual)) {
                feriadosQTD++
            } else if (diaSemana == Calendar.SATURDAY) {
@@ -90,7 +94,9 @@ class CalculadoraViewModel : ViewModel() {
         val mes = (h + l - 7 * m + 114) / 31
         val dia = ((h + l - 7 * m + 114) % 31) + 1
         val pascoa = Calendar.getInstance()
+        
         pascoa.set(ano, mes - 1, dia)
+
         return pascoa
     }
 
